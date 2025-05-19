@@ -1,0 +1,217 @@
+/* Mobile First Approach */
+
+/* Base styles for mobile devices */
+@media (max-width: 576px) {
+    .container {
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: 1.8rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    h3 {
+        font-size: 1.3rem;
+    }
+
+    .navbar {
+        flex-direction: column;
+        padding: 10px;
+    }
+
+    .navbar-brand {
+        margin-bottom: 10px;
+    }
+
+    .navbar-nav {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .nav-item {
+        margin: 5px 0;
+        text-align: center;
+    }
+
+    .dropdown-content {
+        position: static;
+        display: none;
+        width: 100%;
+    }
+
+    .dropdown:hover .dropdown-content {
+        display: none;
+    }
+
+    .dropdown.active .dropdown-content {
+        display: block;
+    }
+
+    .dashboard {
+        grid-template-columns: 1fr;
+    }
+
+    .form-col {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    .inventory-table th, .inventory-table td {
+        padding: 8px 10px;
+    }
+
+    .borrow-form, .admin-form, .profile-container, .item-detail {
+        padding: 15px;
+    }
+
+    .flash-message {
+        width: calc(100% - 40px);
+        right: 20px;
+    }
+}
+
+/* Tablet devices */
+@media (min-width: 577px) and (max-width: 768px) {
+    .dashboard {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .form-col {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
+
+/* Laptop devices */
+@media (min-width: 769px) and (max-width: 992px) {
+    .dashboard {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Desktop devices */
+@media (min-width: 993px) {
+    .dashboard {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* Hamburger menu for mobile */
+@media (max-width: 768px) {
+    .navbar {
+        position: relative;
+    }
+
+    .menu-toggle {
+        display: block;
+        position: absolute;
+        top: 10px;
+        right: 20px;
+        cursor: pointer;
+        font-size: 1.5rem;
+    }
+
+    .navbar-nav {
+        display: none;
+        width: 100%;
+        text-align: center;
+        margin-top: 10px;
+    }
+
+    .navbar-nav.active {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .nav-item {
+        margin: 5px 0;
+    }
+
+    .dashboard-card-value {
+        font-size: 2rem;
+    }
+}
+
+/* Adjust forms for smaller screens */
+@media (max-width: 576px) {
+    .login-container, .register-container {
+        max-width: 100%;
+        margin: 20px auto;
+    }
+
+    .login-form {
+        padding: 20px;
+    }
+
+    input, select, textarea, .btn {
+        font-size: 16px; /* Prevent zooming on iOS */
+    }
+}
+
+/* Fix table overflow on small screens */
+@media (max-width: 768px) {
+    .inventory-table-container {
+        overflow-x: auto;
+    }
+
+    .inventory-table {
+        min-width: 600px;
+    }
+
+    .inventory-filters {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .inventory-filters input, 
+    .inventory-filters select, 
+    .inventory-filters button {
+        width: 100%;
+    }
+}
+
+/* Adjust notification items for mobile */
+@media (max-width: 576px) {
+    .notification-item {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .notification-icon {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+
+    .notification-actions {
+        margin-left: 0;
+        margin-top: 10px;
+    }
+}
+
+/* Ensure dashboard cards are visible on small screens */
+@media (max-width: 400px) {
+    .dashboard {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Improve report display on smaller screens */
+@media (max-width: 768px) {
+    .report-selector {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .report-selector select,
+    .report-selector button {
+        width: 100%;
+    }
+
+    .chart-container {
+        padding: 10px;
+    }
+}
