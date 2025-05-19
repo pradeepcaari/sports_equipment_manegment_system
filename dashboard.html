@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Sports Inventory Management</title>
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <!-- <link rel="stylesheet" href="../css/responsive.css"> -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-brand">Sports Inventory</div>
+        <div class="menu-toggle">
+            <i class="fas fa-bars"></i>
+        </div>
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a href="dashboard.html" class="nav-link active">Dashboard</a>
+            </li>
+            <li class="nav-item">
+                <a href="inventory.html" class="nav-link">Inventory</a>
+            </li>
+            <li class="nav-item coach-only">
+                <a href="borrow.html" class="nav-link">Requests</a>
+            </li>
+            <li class="nav-item">
+                <a href="returns.html" class="nav-link">Returns</a>
+            </li>
+            <li class="nav-item admin-only">
+                <a href="reports.html" class="nav-link">Reports</a>
+            </li>
+            <li class="nav-item admin-only">
+                <a href="admin.html" class="nav-link">Admin</a>
+            </li>
+            <li class="nav-item notification-badge">
+                <a href="notifications.html" class="nav-link">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge">0</span>
+                </a>
+            </li>
+            <li class="nav-item dropdown">
+                <a href="#" class="nav-link dropdown-toggle">
+                    <i class="fas fa-user"></i>
+                    <span id="current-username">User</span>
+                </a>
+                <div class="dropdown-content">
+                    <a href="profile.html">Profile</a>
+                    <a href="#" id="logout-btn">Logout</a>
+                </div>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container" id="dashboard-container">
+        <h2 class="mb-4">Dashboard</h2>
+        
+        <!-- Dashboard Cards -->
+        <div class="dashboard">
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <h3>Total Items</h3>
+                    <div class="card-icon">
+                        <i class="fas fa-boxes"></i>
+                    </div>
+                </div>
+                <div class="dashboard-card-body">
+                    <div class="dashboard-card-value" id="total-items">0</div>
+                    <div class="dashboard-card-label">Equipment Items</div>
+                </div>
+            </div>
+            
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <h3>Items Borrowed</h3>
+                    <div class="card-icon">
+                        <i class="fas fa-hand-holding"></i>
+                    </div>
+                </div>
+                <div class="dashboard-card-body">
+                    <div class="dashboard-card-value" id="items-borrowed">0</div>
+                    <div class="dashboard-card-label">Currently Borrowed</div>
+                </div>
+            </div>
+            
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <h3>Pending Requests</h3>
+                    <div class="card-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                </div>
+                <div class="dashboard-card-body">
+                    <div class="dashboard-card-value" id="pending-requests">0</div>
+                    <div class="dashboard-card-label">Awaiting Approval</div>
+                </div>
+            </div>
+            
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <h3>Low Stock Items</h3>
+                    <div class="card-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                </div>
+                <div class="dashboard-card-body">
+                    <div class="dashboard-card-value" id="low-stock-items">0</div>
+                    <div class="dashboard-card-label">Need Attention</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Activity -->
+        <div class="mt-5">
+            <h3>Recent Activity</h3>
+            <div class="inventory-table-container">
+                <table class="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>User</th>
+                            <th>Item</th>
+                            <th>Action</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recent-activity-table">
+                        <!-- Activity data will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Your Items (for non-admin users) -->
+        <div class="mt-5 player-only">
+            <h3>Your Borrowed Items</h3>
+            <div class="inventory-table-container">
+                <table class="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Borrow Date</th>
+                            <th>Due Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="your-items-table">
+                        <!-- User's items will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Admin Quick Actions -->
+        <div class="mt-5 admin-only">
+            <h3>Quick Actions</h3>
+            <div class="d-flex flex-wrap">
+                <a href="admin.html" class="btn btn-primary m-2">
+                    <i class="fas fa-users"></i> Manage Users
+                </a>
+                <a href="inventory.html" class="btn btn-primary m-2">
+                    <i class="fas fa-boxes"></i> Manage Inventory
+                </a>
+                <a href="reports.html" class="btn btn-primary m-2">
+                    <i class="fas fa-chart-bar"></i> View Reports
+                </a>
+                <a href="borrow.html" class="btn btn-primary m-2">
+                    <i class="fas fa-clipboard-list"></i> Manage Requests
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dashboard-specific JavaScript
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in
+            if (!isLoggedIn()) {
+                window.location.href = '../index.html';
+                return;
+            }
+            
+            // Load dashboard data
+            loadDashboardData();
+            
+            // Load recent activity
+            loadRecentActivity();
+            
+            // Load user's borrowed items if player
+            const currentUser = getCurrentUser();
+            if (currentUser && currentUser.role === 'player') {
+                loadUserBorrowedItems();
+            }
+        });
+        
+        // Load dashboard data
+        function loadDashboardData() {
+            // Get inventory items
+            const inventory = getInventory();
+            
+            // Get borrow records
+            const borrowRecords = getBorrowRecords();
+            
+            // Calculate dashboard metrics
+            
+            // Total items
+            const totalItems = inventory.length;
+            document.getElementById('total-items').textContent = totalItems;
+            
+            // Currently borrowed items
+            const borrowedItems = borrowRecords.filter(record => record.status === 'approved').length;
+            document.getElementById('items-borrowed').textContent = borrowedItems;
+            
+            // Pending requests
+            const pendingRequests = borrowRecords.filter(record => record.status === 'pending').length;
+            document.getElementById('pending-requests').textContent = pendingRequests;
+            
+            // Low stock items
+            const lowStockItems = inventory.filter(item => {
+                const availableQty = item.availableQuantity !== undefined ? item.availableQuantity : item.quantity;
+                return availableQty <= item.threshold && availableQty > 0;
+            }).length;
+            document.getElementById('low-stock-items').textContent = lowStockItems;
+        }
+        
+        // Load recent activity
+        function loadRecentActivity() {
+            const activityTable = document.getElementById('recent-activity-table');
+            if (!activityTable) return;
+            
+            // Get borrow records
+            const borrowRecords = getBorrowRecords();
+            
+            // Sort by most recent first
+            borrowRecords.sort((a, b) => new Date(b.requestDate) - new Date(a.requestDate));
+            
+            // Get only the 10 most recent records
+            const recentRecords = borrowRecords.slice(0, 10);
+            
+            // Clear table
+            activityTable.innerHTML = '';
+            
+            if (recentRecords.length === 0) {
+                activityTable.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center">No recent activity</td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Populate table with recent activity
+            recentRecords.forEach(record => {
+                const item = getInventoryItem(record.itemId);
+                const user = getUserById(record.userId);
+                
+                if (!item || !user) return;
+                
+                let action = '';
+                let statusClass = '';
+                let statusText = '';
+                
+                switch(record.status) {
+                    case 'pending':
+                        action = 'Requested';
+                        statusClass = '';
+                        statusText = 'Pending Approval';
+                        break;
+                    case 'approved':
+                        action = 'Borrowed';
+                        statusClass = 'status-available';
+                        statusText = 'Approved';
+                        break;
+                    case 'rejected':
+                        action = 'Requested';
+                        statusClass = 'status-unavailable';
+                        statusText = 'Rejected';
+                        break;
+                    case 'returned':
+                        action = 'Returned';
+                        statusClass = 'status-available';
+                        statusText = 'Completed';
+                        break;
+                }
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${formatDate(record.requestDate)}</td>
+                    <td>${user.username}</td>
+                    <td>${item.name}</td>
+                    <td>${action}</td>
+                    <td class="${statusClass}">${statusText}</td>
+                `;
+                
+                activityTable.appendChild(row);
+            });
+        }
+        
+        // Load user's borrowed items
+        function loadUserBorrowedItems() {
+            const userItemsTable = document.getElementById('your-items-table');
+            if (!userItemsTable) return;
+            
+            const currentUser = getCurrentUser();
+            if (!currentUser) return;
+            
+            // Get user's borrow records
+            const userRecords = getUserBorrowRecords(currentUser.id);
+            
+            // Filter for active and pending borrows
+            const activeRecords = userRecords.filter(record => 
+                record.status === 'approved' || record.status === 'pending'
+            );
+            
+            // Sort by status (pending first) then by due date (earliest first)
+            activeRecords.sort((a, b) => {
+                if (a.status === 'pending' && b.status !== 'pending') return -1;
+                if (a.status !== 'pending' && b.status === 'pending') return 1;
+                return new Date(a.dueDate) - new Date(b.dueDate);
+            });
+            
+            // Clear table
+            userItemsTable.innerHTML = '';
+            
+            if (activeRecords.length === 0) {
+                userItemsTable.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center">You have no active borrowed items</td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Populate table with user's items
+            activeRecords.forEach(record => {
+                const item = getInventoryItem(record.itemId);
+                if (!item) return;
+                
+                const today = new Date();
+                const dueDate = new Date(record.dueDate);
+                const isOverdue = record.status === 'approved' && dueDate < today;
+                
+                let statusClass = '';
+                let statusText = '';
+                
+                if (record.status === 'pending') {
+                    statusClass = '';
+                    statusText = 'Pending Approval';
+                } else if (isOverdue) {
+                    statusClass = 'status-unavailable';
+                    statusText = 'Overdue';
+                } else {
+                    statusClass = 'status-available';
+                    statusText = 'Active';
+                }
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>${formatDate(record.requestDate)}</td>
+                    <td class="${isOverdue ? 'status-unavailable' : ''}">${formatDate(record.dueDate)}</td>
+                    <td class="${statusClass}">${statusText}</td>
+                    <td>
+                        ${record.status === 'approved' ? 
+                          `<button class="btn btn-primary btn-sm return-btn" data-id="${record.id}">Return</button>` : ''}
+                        <a href="inventory-detail.html?id=${item.id}" class="btn btn-secondary btn-sm">View Item</a>
+                    </td>
+                `;
+                
+                userItemsTable.appendChild(row);
+            });
+            
+            // Add event listeners to return buttons
+            const returnButtons = userItemsTable.querySelectorAll('.return-btn');
+            returnButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const recordId = this.getAttribute('data-id');
+                    initiateReturn(recordId);
+                });
+            });
+        }
+        
+        // Initiate item return
+        function initiateReturn(recordId) {
+            const record = getBorrowRecord(recordId);
+            if (!record) {
+                showFlashMessage('Record not found', 'error');
+                return;
+            }
+            
+            const item = getInventoryItem(record.itemId);
+            if (!item) {
+                showFlashMessage('Item not found', 'error');
+                return;
+            }
+            
+            // Redirect to returns page
+            window.location.href = 'returns.html';
+        }
+    </script>
+
+    <script src="../js/data.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/main.js"></script>
+</body>
+</html>

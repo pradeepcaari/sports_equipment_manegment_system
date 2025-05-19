@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - Sports Inventory Management</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-brand">Sports Inventory</div>
+        <div class="menu-toggle">
+            <i class="fas fa-bars"></i>
+        </div>
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+            </li>
+            <li class="nav-item">
+                <a href="inventory.html" class="nav-link">Inventory</a>
+            </li>
+            <li class="nav-item coach-only">
+                <a href="borrow.html" class="nav-link">Requests</a>
+            </li>
+            <li class="nav-item">
+                <a href="returns.html" class="nav-link">Returns</a>
+            </li>
+            <li class="nav-item admin-only">
+                <a href="reports.html" class="nav-link active">Reports</a>
+            </li>
+            <li class="nav-item admin-only">
+                <a href="admin.html" class="nav-link">Admin</a>
+            </li>
+            <li class="nav-item notification-badge">
+                <a href="notifications.html" class="nav-link">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge">0</span>
+                </a>
+            </li>
+            <li class="nav-item dropdown">
+                <a href="#" class="nav-link dropdown-toggle">
+                    <i class="fas fa-user"></i>
+                    <span id="current-username">User</span>
+                </a>
+                <div class="dropdown-content">
+                    <a href="profile.html">Profile</a>
+                    <a href="#" id="logout-btn">Logout</a>
+                </div>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container" id="reports-container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Reports</h2>
+            <button id="export-report-btn" class="btn btn-primary">
+                <i class="fas fa-file-export"></i> Export Report
+            </button>
+        </div>
+        
+        <!-- Report Selection -->
+        <div class="report-selector mb-4">
+            <div class="form-group">
+                <label for="report-selector">Select Report:</label>
+                <select id="report-selector" class="form-control">
+                    <option value="equipment-usage">Equipment Usage</option>
+                    <option value="overdue-items">Overdue Items</option>
+                    <option value="inventory-status">Inventory Status</option>
+                    <option value="user-activity">User Activity</option>
+                    <option value="low-stock">Low Stock</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- Report Content -->
+        <div id="report-content">
+            <!-- Report will be loaded here -->
+        </div>
+    </div>
+
+    <script src="../js/data.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/reports.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is an admin
+            const currentUser = getCurrentUser();
+            if (!currentUser || currentUser.role !== 'admin') {
+                // Redirect non-admin users
+                window.location.href = 'dashboard.html';
+                return;
+            }
+            
+            // Export report button
+            const exportBtn = document.getElementById('export-report-btn');
+            if (exportBtn) {
+                exportBtn.addEventListener('click', function() {
+                    const reportType = document.getElementById('report-selector').value;
+                    exportReportToCsv(reportType);
+                });
+            }
+            
+            // Generate data for export - these functions would be called when exporting
+            
+            // Equipment Usage Data
+            function generateEquipmentUsageData() {
+                const borrowRecords = getBorrowRecords();
+                const inventory = getInventory();
+                const timeValue = document.getElementById('time-period')?.value || '30';
+                
+                // Filter records by time period
+                const today = new Date();
+                const startDate = new Date();
+                
+                if (timeValue !== 'all') {
+                    startDate.setDate(today.getDate() - parseInt(timeValue));
+                } else {
+                    startDate.setFullYear(2000);
+                }
+                
+                // Filter to only include approved or returned records within the time period
+                const filteredRecords = borrowRecords.filter(record => {
+                    const recordDate = new Date(record.requestDate);
+                    return (record.status === 'approved' || record.status === 'returned') && 
+                           recordDate >= startDate && recordDate <= today;
+                });
+                
+                // Calculate usage statistics by item
+                const usageStats = {};
+                
+                // Initialize all inventory items with zero stats
+                inventory.forEach(item => {
+                    usageStats[item.id] = {
+                        Name: item.name,
+                        Category: item.category,
+                        'Times Borrowed': 0,
+                        'Total Quantity Borrowed': 0,
+                        'Average Duration (days)': 0
+                    };
+                });
+                
+                // Accumulate stats from borrow records
+                filteredRecords.forEach(record => {
+                    if (!usageStats[record.itemId]) return;
+                    
+                    usageStats[record.itemId]['Times Borrowed'] += 1;
+                    usageStats[record.itemId]['Total Quantity Borrowed'] += record.quantity;
+                    
+                    // Calculate duration
+                    const borrowDate = new Date(record.requestDate);
+                    const returnDate = record.returnDate ? new Date(record.returnDate) : new Date();
+                    const durationDays = Math.ceil((returnDate - borrowDate) / (1000 * 60 * 60 * 24));
+                    
+                    usageStats[record.itemId].totalDuration = (usageStats[record.itemId].totalDuration || 0) + durationDays;
+                });
+                
+                // Calculate average durations
+                Object.values(usageStats).forEach(stat => {
+                    if (stat['Times Borrowed'] > 0) {
+                        stat['Average Duration (days)'] = Math.round(stat.totalDuration / stat['Times Borrowed']);
+                        delete stat.totalDuration; // Remove the temporary property
+                    }
+                });
+                
+                // Convert to array and sort
+                return Object.values(usageStats)
+                    .filter(stat => stat['Times Borrowed'] > 0)
+                    .sort((a, b) => b['Times Borrowed'] - a['Times Borrowed']);
+            }
+            
+            // Overdue Items Data
+            function generateOverdueItemsData() {
+                const borrowRecords = getBorrowRecords();
+                const inventory = getInventory();
+                const users = getUsers();
+                
+                // Filter for overdue items
+                const today = new Date();
+                const overdueRecords = borrowRecords.filter(record => {
+                    const dueDate = new Date(record.dueDate);
+                    return record.status === 'approved' && dueDate < today;
+                });
+                
+                // Sort by most overdue first
+                overdueRecords.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+                
+                // Create data array
+                return overdueRecords.map(record => {
+                    const item = inventory.find(i => i.id === record.itemId) || { name: 'Unknown Item' };
+                    const user = users.find(u => u.id === record.userId) || { username: 'Unknown User' };
+                    
+                    const dueDate = new Date(record.dueDate);
+                    const daysOverdue = Math.ceil((today - dueDate) / (1000 * 60 * 60 * 24));
+                    
+                    return {
+                        'Item': item.name,
+                        'Borrower': user.username,
+                        'Due Date': formatDate(record.dueDate),
+                        'Days Overdue': daysOverdue,
+                        'Quantity': record.quantity,
+                        'Request Date': formatDate(record.requestDate)
+                    };
+                });
+            }
+            
+            // Inventory Status Data
+            function generateInventoryStatusData() {
+                // Get inventory items
+                let inventory = getInventory();
+                
+                // Ensure available quantities are up to date
+                inventory.forEach(item => {
+                    updateInventoryQuantity(item.id);
+                });
+                
+                // Refresh inventory after updating quantities
+                inventory = getInventory();
+                
+                // Get filters
+                const categoryValue = document.getElementById('category-filter')?.value || 'all';
+                const statusValue = document.getElementById('status-filter')?.value || 'all';
+                
+                // Apply filters
+                if (categoryValue !== 'all') {
+                    inventory = inventory.filter(item => item.category === categoryValue);
+                }
+                
+                if (statusValue !== 'all') {
+                    inventory = inventory.filter(item => {
+                        const availableQty = item.availableQuantity !== undefined ? item.availableQuantity : item.quantity;
+                        
+                        if (statusValue === 'available') {
+                            return availableQty > item.threshold;
+                        } else if (statusValue === 'low') {
+                            return availableQty > 0 && availableQty <= item.threshold;
+                        } else if (statusValue === 'unavailable') {
+                            return availableQty === 0;
+                        }
+                        return true;
+                    });
+                }
+                
+                // Create data array
+                return inventory.map(item => {
+                    const availableQty = item.availableQuantity !== undefined ? item.availableQuantity : item.quantity;
+                    const statusText = getStatusText(availableQty, item.threshold);
+                    
+                    return {
+                        'Item': item.name,
+                        'Category': item.category,
+                        'Available / Total': `${availableQty} / ${item.quantity}`,
+                        'Status': statusText,
+                        'Location': item.location,
+                        'Last Updated': formatDate(item.lastUpdated)
+                    };
+                });
+            }
+            
+            // User Activity Data
+            function generateUserActivityData() {
+                const borrowRecords = getBorrowRecords();
+                const users = getUsers();
+                
+                // Get filters
+                const roleValue = document.getElementById('role-filter')?.value || 'all';
+                const timeValue = document.getElementById('activity-time-period')?.value || '30';
+                
+                // Filter users by role
+                let filteredUsers = [...users];
+                if (roleValue !== 'all') {
+                    filteredUsers = filteredUsers.filter(user => user.role === roleValue);
+                }
+                
+                // Filter records by time period
+                const today = new Date();
+                const startDate = new Date();
+                
+                if (timeValue !== 'all') {
+                    startDate.setDate(today.getDate() - parseInt(timeValue));
+                } else {
+                    startDate.setFullYear(2000);
+                }
+                
+                const filteredRecords = borrowRecords.filter(record => {
+                    const recordDate = new Date(record.requestDate);
+                    return recordDate >= startDate && recordDate <= today;
+                });
+                
+                // Calculate activity statistics by user
+                const activityStats = {};
+                
+                // Initialize all users with zero stats
+                filteredUsers.forEach(user => {
+                    activityStats[user.id] = {
+                        'User': user.username,
+                        'Role': user.role,
+                        'Items Borrowed': 0,
+                        'Total Quantity': 0,
+                        'Active Borrows': 0,
+                        'Overdue Items': 0
+                    };
+                });
+                
+                // Accumulate stats from borrow records
+                filteredRecords.forEach(record => {
+                    if (!activityStats[record.userId]) return;
+                    
+                    if (record.status === 'approved' || record.status === 'returned') {
+                        activityStats[record.userId]['Items Borrowed'] += 1;
+                        activityStats[record.userId]['Total Quantity'] += record.quantity;
+                        
+                        // Check if it's an active borrow
+                        if (record.status === 'approved') {
+                            activityStats[record.userId]['Active Borrows'] += 1;
+                            
+                            // Check if it's overdue
+                            const dueDate = new Date(record.dueDate);
+                            if (dueDate < today) {
+                                activityStats[record.userId]['Overdue Items'] += 1;
+                            }
+                        }
+                    }
+                });
+                
+                // Convert to array and filter users with no activity
+                return Object.values(activityStats)
+                    .filter(stat => stat['Items Borrowed'] > 0)
+                    .sort((a, b) => b['Items Borrowed'] - a['Items Borrowed']);
+            }
+            
+            // Low Stock Data
+            function generateLowStockData() {
+                // Get inventory items
+                const inventory = getInventory();
+                
+                // Update available quantities
+                inventory.forEach(item => {
+                    updateInventoryQuantity(item.id);
+                });
+                
+                // Filter for low stock items
+                const lowStockItems = inventory.filter(item => {
+                    const availableQty = item.availableQuantity !== undefined ? item.availableQuantity : item.quantity;
+                    return availableQty <= item.threshold;
+                });
+                
+                // Sort by available quantity (ascending)
+                lowStockItems.sort((a, b) => {
+                    const aQty = a.availableQuantity !== undefined ? a.availableQuantity : a.quantity;
+                    const bQty = b.availableQuantity !== undefined ? b.availableQuantity : b.quantity;
+                    return aQty - bQty;
+                });
+                
+                // Create data array
+                return lowStockItems.map(item => {
+                    const availableQty = item.availableQuantity !== undefined ? item.availableQuantity : item.quantity;
+                    const statusText = getStatusText(availableQty, item.threshold);
+                    
+                    return {
+                        'Item': item.name,
+                        'Category': item.category,
+                        'Available / Total': `${availableQty} / ${item.quantity}`,
+                        'Threshold': item.threshold,
+                        'Status': statusText,
+                        'Location': item.location
+                    };
+                });
+            }
+        });
+    </script>
+</body>
+</html>

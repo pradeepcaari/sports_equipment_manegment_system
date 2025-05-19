@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Sports Inventory Management</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-brand">Sports Inventory</div>
+        <div class="menu-toggle">
+            <i class="fas fa-bars"></i>
+        </div>
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+            </li>
+            <li class="nav-item">
+                <a href="inventory.html" class="nav-link">Inventory</a>
+            </li>
+            <li class="nav-item coach-only">
+                <a href="borrow.html" class="nav-link">Requests</a>
+            </li>
+            <li class="nav-item">
+                <a href="returns.html" class="nav-link">Returns</a>
+            </li>
+            <li class="nav-item admin-only">
+                <a href="reports.html" class="nav-link">Reports</a>
+            </li>
+            <li class="nav-item admin-only">
+                <a href="admin.html" class="nav-link">Admin</a>
+            </li>
+            <li class="nav-item notification-badge">
+                <a href="notifications.html" class="nav-link">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge">0</span>
+                </a>
+            </li>
+            <li class="nav-item dropdown">
+                <a href="#" class="nav-link dropdown-toggle active">
+                    <i class="fas fa-user"></i>
+                    <span id="current-username">User</span>
+                </a>
+                <div class="dropdown-content">
+                    <a href="profile.html">Profile</a>
+                    <a href="#" id="logout-btn">Logout</a>
+                </div>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container" id="profile-container">
+        <h2 class="mb-4">User Profile</h2>
+        
+        <div class="profile-container">
+            <div class="profile-header text-center">
+                <div class="profile-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h3 id="profile-username">Username</h3>
+                <p id="profile-role">Role</p>
+            </div>
+            
+            <div class="mt-4">
+                <h4>Account Information</h4>
+                <div class="profile-info mb-4">
+                    <div>
+                        <div class="item-info-group">
+                            <div class="item-info-label">Username</div>
+                            <div id="profile-username-value">username</div>
+                        </div>
+                        <div class="item-info-group">
+                            <div class="item-info-label">Role</div>
+                            <div id="profile-role-value">role</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="change-password-btn" class="btn btn-primary">
+                    <i class="fas fa-key"></i> Change Password
+                </button>
+            </div>
+            
+            <div class="profile-activity mt-5">
+                <h4>My Borrowing Activity</h4>
+                <div class="inventory-table-container">
+                    <table class="inventory-table">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Borrow Date</th>
+                                <th>Due Date</th>
+                                <th>Return Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="activity-table-body">
+                            <!-- Activity will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/data.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/main.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in
+            if (!isLoggedIn()) {
+                window.location.href = '../index.html';
+                return;
+            }
+            
+            // Load user profile data
+            loadUserProfile();
+            
+            // Load user borrowing activity
+            loadUserActivity();
+            
+            // Set up change password button
+            setupChangePasswordButton();
+        });
+        
+        // Load user profile data
+        function loadUserProfile() {
+            const currentUser = getCurrentUser();
+            if (!currentUser) return;
+            
+            // Set profile header
+            document.getElementById('profile-username').textContent = currentUser.username;
+            document.getElementById('profile-role').textContent = currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1);
+            
+            // Set profile info
+            document.getElementById('profile-username-value').textContent = currentUser.username;
+            document.getElementById('profile-role-value').textContent = currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1);
+        }
+        
+        // Load user borrowing activity
+        function loadUserActivity() {
+            const activityTable = document.getElementById('activity-table-body');
+            if (!activityTable) return;
+            
+            const currentUser = getCurrentUser();
+            if (!currentUser) return;
+            
+            // Get all user's borrow records
+            const borrowRecords = getUserBorrowRecords(currentUser.id);
+            
+            // Sort by request date (newest first)
+            borrowRecords.sort((a, b) => new Date(b.requestDate) - new Date(a.requestDate));
+            
+            // Clear table
+            activityTable.innerHTML = '';
+            
+            if (borrowRecords.length === 0) {
+                activityTable.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center">No borrowing activity found</td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Populate table with user's activity
+            borrowRecords.forEach(record => {
+                const item = getInventoryItem(record.itemId);
+                if (!item) return;
+                
+                let statusClass = '';
+                let statusText = '';
+                
+                const today = new Date();
+                const dueDate = new Date(record.dueDate);
+                const isOverdue = record.status === 'approved' && dueDate < today;
+                
+                switch(record.status) {
+                    case 'pending':
+                        statusClass = '';
+                        statusText = 'Pending Approval';
+                        break;
+                    case 'approved':
+                        statusClass = isOverdue ? 'status-unavailable' : 'status-available';
+                        statusText = isOverdue ? 'Overdue' : 'Borrowed';
+                        break;
+                    case 'rejected':
+                        statusClass = 'status-unavailable';
+                        statusText = 'Rejected';
+                        break;
+                    case 'returned':
+                        statusClass = 'status-available';
+                        statusText = 'Returned';
+                        break;
+                }
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>${formatDate(record.requestDate)}</td>
+                    <td>${record.status !== 'rejected' ? formatDate(record.dueDate) : '-'}</td>
+                    <td>${record.returnDate ? formatDate(record.returnDate) : '-'}</td>
+                    <td class="${statusClass}">${statusText}</td>
+                `;
+                
+                activityTable.appendChild(row);
+            });
+        }
+        
+        // Set up change password button
+        function setupChangePasswordButton() {
+            const changePasswordBtn = document.getElementById('change-password-btn');
+            if (!changePasswordBtn) return;
+            
+            changePasswordBtn.addEventListener('click', function() {
+                // Create form content
+                const formContent = document.createElement('div');
+                formContent.innerHTML = `
+                    <form id="change-password-form">
+                        <div class="form-group">
+                            <label for="current-password">Current Password</label>
+                            <input type="password" id="current-password" name="current-password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-password">New Password</label>
+                            <input type="password" id="new-password" name="new-password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirm-password">Confirm New Password</label>
+                            <input type="password" id="confirm-password" name="confirm-password" required>
+                        </div>
+                    </form>
+                `;
+                
+                // Create modal with form
+                const modal = createModal('Change Password', formContent, [
+                    {
+                        text: 'Cancel',
+                        class: 'btn-secondary'
+                    },
+                    {
+                        text: 'Update Password',
+                        class: 'btn-primary',
+                        callback: () => {
+                            const form = document.getElementById('change-password-form');
+                            if (form.checkValidity()) {
+                                const currentPassword = document.getElementById('current-password').value;
+                                const newPassword = document.getElementById('new-password').value;
+                                const confirmPassword = document.getElementById('confirm-password').value;
+                                
+                                // Validate inputs
+                                if (newPassword !== confirmPassword) {
+                                    showFlashMessage('New passwords do not match', 'error');
+                                    return false; // Prevent modal from closing
+                                }
+                                
+                                // Verify current password
+                                const currentUser = getCurrentUser();
+                                const users = getUsers();
+                                const userIndex = users.findIndex(u => u.id === currentUser.id);
+                                
+                                if (userIndex === -1) {
+                                    showFlashMessage('User not found', 'error');
+                                    return false;
+                                }
+                                
+                                if (users[userIndex].password !== currentPassword) {
+                                    showFlashMessage('Current password is incorrect', 'error');
+                                    return false;
+                                }
+                                
+                                // Update password
+                                users[userIndex].password = newPassword;
+                                localStorage.setItem('users', JSON.stringify(users));
+                                
+                                // Show success message
+                                showFlashMessage('Password updated successfully!', 'success');
+                            } else {
+                                form.reportValidity();
+                                return false; // Prevent modal from closing
+                            }
+                        }
+                    }
+                ]);
+            });
+        }
+    </script>
+</body>
+</html>

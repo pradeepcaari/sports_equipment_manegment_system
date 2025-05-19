@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Sports Inventory Management</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <!-- <link rel="stylesheet" href="../css/responsive.css"> -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-brand">Sports Inventory</div>
+        <div class="menu-toggle">
+            <i class="fas fa-bars"></i>
+        </div>
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+            </li>
+            <li class="nav-item">
+                <a href="inventory.html" class="nav-link">Inventory</a>
+            </li>
+            <li class="nav-item coach-only">
+                <a href="borrow.html" class="nav-link">Requests</a>
+            </li>
+            <li class="nav-item">
+                <a href="returns.html" class="nav-link">Returns</a>
+            </li>
+            <li class="nav-item admin-only">
+                <a href="reports.html" class="nav-link">Reports</a>
+            </li>
+            <li class="nav-item admin-only">
+                <a href="admin.html" class="nav-link active">Admin</a>
+            </li>
+            <li class="nav-item notification-badge">
+                <a href="notifications.html" class="nav-link">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge">0</span>
+                </a>
+            </li>
+            <li class="nav-item dropdown">
+                <a href="#" class="nav-link dropdown-toggle">
+                    <i class="fas fa-user"></i>
+                    <span id="current-username">User</span>
+                </a>
+                <div class="dropdown-content">
+                    <a href="profile.html">Profile</a>
+                    <a href="#" id="logout-btn">Logout</a>
+                </div>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container" id="admin-container">
+        <h2 class="mb-4">Admin Panel</h2>
+        
+        <!-- Admin Tabs Navigation -->
+        <div class="admin-tabs mb-4">
+            <ul class="d-flex">
+                <li><a href="#" class="admin-tab-link active" data-tab="users-tab">Users</a></li>
+                <li><a href="#" class="admin-tab-link" data-tab="locations-tab">Locations</a></li>
+                <li><a href="#" class="admin-tab-link" data-tab="categories-tab">Categories</a></li>
+            </ul>
+        </div>
+        
+        <!-- Users Tab -->
+        <div id="users-tab" class="admin-tab-content">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3>User Management</h3>
+                <button id="add-user-btn" class="btn btn-primary">
+                    <i class="fas fa-user-plus"></i> Add New User
+                </button>
+            </div>
+            
+            <!-- Search and Filters -->
+            <div class="inventory-filters">
+                <div class="form-group">
+                    <input type="text" id="search-users" placeholder="Search users..." class="form-control">
+                </div>
+                <div class="form-group">
+                    <select id="role-filter" class="form-control">
+                        <option value="all">All Roles</option>
+                        <option value="admin">Admin</option>
+                        <option value="coach">Coach</option>
+                        <option value="player">Player</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <button id="reset-user-filters" class="btn btn-secondary">Reset Filters</button>
+                </div>
+            </div>
+            
+            <!-- Users Table -->
+            <div class="inventory-table-container">
+                <table class="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Role</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-body">
+                        <!-- Users will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Locations Tab -->
+        <div id="locations-tab" class="admin-tab-content" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3>Location Management</h3>
+                <button id="add-location-btn" class="btn btn-primary">
+                    <i class="fas fa-map-marker-alt"></i> Add New Location
+                </button>
+            </div>
+            
+            <!-- Locations Table -->
+            <div class="inventory-table-container">
+                <table class="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>Location Name</th>
+                            <th>Items Count</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="locations-table-body">
+                        <!-- Locations will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Categories Tab -->
+        <div id="categories-tab" class="admin-tab-content" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3>Category Management</h3>
+                <button id="add-category-btn" class="btn btn-primary">
+                    <i class="fas fa-tags"></i> Add New Category
+                </button>
+            </div>
+            
+            <!-- Categories Table -->
+            <div class="inventory-table-container">
+                <table class="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>Category Name</th>
+                            <th>Items Count</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="categories-table-body">
+                        <!-- Categories will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/data.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/admin.js"></script>
+
+    <script>
+        // Add location functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const addLocationBtn = document.getElementById('add-location-btn');
+            if (addLocationBtn) {
+                addLocationBtn.addEventListener('click', function() {
+                    // Create form content
+                    const formContent = document.createElement('div');
+                    formContent.innerHTML = `
+                        <form id="add-location-form">
+                            <div class="form-group">
+                                <label for="location-name">Location Name</label>
+                                <input type="text" id="location-name" name="location-name" required>
+                            </div>
+                        </form>
+                    `;
+                    
+                    // Create modal with form
+                    const modal = createModal('Add New Location', formContent, [
+                        {
+                            text: 'Cancel',
+                            class: 'btn-secondary'
+                        },
+                        {
+                            text: 'Add Location',
+                            class: 'btn-primary',
+                            callback: () => {
+                                const form = document.getElementById('add-location-form');
+                                if (form.checkValidity()) {
+                                    const locationName = document.getElementById('location-name').value;
+                                    
+                                    // Check if location already exists
+                                    const inventory = getInventory();
+                                    const locations = [...new Set(inventory.map(item => item.location))];
+                                    
+                                    if (locations.includes(locationName)) {
+                                        showFlashMessage('Location already exists', 'error');
+                                        return false; // Prevent modal from closing
+                                    }
+                                    
+                                    // Create a dummy item to add the location
+                                    const dummyItem = {
+                                        id: 'temp_' + Date.now(),
+                                        name: 'Temp Item for Location',
+                                        category: 'Temp',
+                                        quantity: 0,
+                                        location: locationName,
+                                        threshold: 0,
+                                        condition: 'Good',
+                                        notes: 'This is a temporary item to add a new location'
+                                    };
+                                    
+                                    // Add the temporary item
+                                    saveInventoryItem(dummyItem);
+                                    
+                                    // Now remove it
+                                    deleteInventoryItem(dummyItem.id);
+                                    
+                                    // Show success message
+                                    showFlashMessage('Location added successfully!', 'success');
+                                    
+                                    // Reload locations
+                                    loadLocations();
+                                } else {
+                                    form.reportValidity();
+                                    return false; // Prevent modal from closing
+                                }
+                            }
+                        }
+                    ]);
+                });
+            }
+            
+            // Add category functionality
+            const addCategoryBtn = document.getElementById('add-category-btn');
+            if (addCategoryBtn) {
+                addCategoryBtn.addEventListener('click', function() {
+                    // Create form content
+                    const formContent = document.createElement('div');
+                    formContent.innerHTML = `
+                        <form id="add-category-form">
+                            <div class="form-group">
+                                <label for="category-name">Category Name</label>
+                                <input type="text" id="category-name" name="category-name" required>
+                            </div>
+                        </form>
+                    `;
+                    
+                    // Create modal with form
+                    const modal = createModal('Add New Category', formContent, [
+                        {
+                            text: 'Cancel',
+                            class: 'btn-secondary'
+                        },
+                        {
+                            text: 'Add Category',
+                            class: 'btn-primary',
+                            callback: () => {
+                                const form = document.getElementById('add-category-form');
+                                if (form.checkValidity()) {
+                                    const categoryName = document.getElementById('category-name').value;
+                                    
+                                    // Check if category already exists
+                                    const inventory = getInventory();
+                                    const categories = [...new Set(inventory.map(item => item.category))];
+                                    
+                                    if (categories.includes(categoryName)) {
+                                        showFlashMessage('Category already exists', 'error');
+                                        return false; // Prevent modal from closing
+                                    }
+                                    
+                                    // Create a dummy item to add the category
+                                    const dummyItem = {
+                                        id: 'temp_' + Date.now(),
+                                        name: 'Temp Item for Category',
+                                        category: categoryName,
+                                        quantity: 0,
+                                        location: 'Temp',
+                                        threshold: 0,
+                                        condition: 'Good',
+                                        notes: 'This is a temporary item to add a new category'
+                                    };
+                                    
+                                    // Add the temporary item
+                                    saveInventoryItem(dummyItem);
+                                    
+                                    // Now remove it
+                                    deleteInventoryItem(dummyItem.id);
+                                    
+                                    // Show success message
+                                    showFlashMessage('Category added successfully!', 'success');
+                                    
+                                    // Reload categories
+                                    loadCategories();
+                                } else {
+                                    form.reportValidity();
+                                    return false; // Prevent modal from closing
+                                }
+                            }
+                        }
+                    ]);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
